@@ -15,6 +15,9 @@ import {Tools} from '../tools';
 
 import {TwitchGetLiveStreamsResponse} from '../responses/twitchGetLiveStreamsResponse';
 
+const MAX_JOIN_INTERVAL = 15;
+const MAX_JOIN_IN_INTERVAL = 49;
+
 export class TwitchService implements MikuiaService {
 	private channelClients = {};
 	private channelsJoined: Array<string> = [];
@@ -25,8 +28,8 @@ export class TwitchService implements MikuiaService {
 	private nextJoinClient = 0;
 
 	private joinLimiter = limiter({
-		interval: 10 * 1000,
-		maxInInterval: 49,
+		interval: MAX_JOIN_INTERVAL * 1000,
+		maxInInterval: MAX_JOIN_IN_INTERVAL,
 		namespace: 'service:twitch:limiter:join',
 		redis: this.db
 	})
@@ -58,22 +61,27 @@ export class TwitchService implements MikuiaService {
 		var Channel = this.getChannel(this.idMappings[channel]);
 		var handler = await Channel.getCommandHandler(trigger);
 
-		if(handler && this.msg.isHandler(handler)) {
-			var settings = await Channel.getCommandSettings(trigger, this.msg.getHandler(handler).settings);
+		if(handler) {
+			if(this.msg.isHandler(handler)) {
+				var settings = await Channel.getCommandSettings(trigger, this.msg.getHandler(handler).settings);
 
-			this.msg.broadcast('event:handler:' + handler, {
-				service: {
-					userstate: userstate,
-					channel: channel,
+				this.msg.broadcast('event:handler:' + handler, {
+					service: {
+						userstate: userstate,
+						channel: channel,
+						message: message,
+						type: 'twitch'
+					},
 					message: message,
-					type: 'twitch'
-				},
-				message: message,
-				tokens: tokens
-			});
-		} else {
-			this.say(channel, 'Sorry, could not process your command. (handler missing: ' + handler + ')');
+					tokens: tokens
+				});
+			} else {
+				this.say(channel, 'Sorry, could not process your command. (handler missing: ' + handler + ')');
+			}
 		}
+		// } else {
+		// 	this.say(channel, 'Sorry, could not process your command. (handler missing: ' + handler + ')');
+		// }
 		// console.log(cli.greenBright(channel) + ' -> ' + cli.redBright(trigger) + ' -> ' + cli.cyanBright(command));
 	}
 
@@ -94,12 +102,12 @@ export class TwitchService implements MikuiaService {
 						I don't have one.
 						This has been working for like a year or so, it's probably fine. */
 
-					var limitEntries = await this.db.zrangebyscoreAsync('service:twitch:limiter:join', '-inf', '+inf');
+					var limitEntries = await this.db.zrangebyscoreAsync('service:twitch:limiter:join', '-inf', '+inf', 'withscores');
 					var currentTime = (new Date).getTime() * 1000;
-					var remainingRequests = 49;
+					var remainingRequests = MAX_JOIN_IN_INTERVAL;
 
 					for(let limitEntry of limitEntries) {
-						if(parseInt(limitEntry) + 15 * 1000 * 1000 > currentTime) {
+						if(parseInt(limitEntry) + MAX_JOIN_INTERVAL * 1000 * 1000 > currentTime) {
 							remainingRequests--;
 						}
 					}
