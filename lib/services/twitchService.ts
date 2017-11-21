@@ -71,6 +71,8 @@ export class TwitchService implements MikuiaService {
 				message: message,
 				tokens: tokens
 			});
+		} else {
+			this.say(channel, 'Sorry, could not process your command. (handler missing: ' + handler + ')');
 		}
 		// console.log(cli.greenBright(channel) + ' -> ' + cli.redBright(trigger) + ' -> ' + cli.cyanBright(command));
 	}
