@@ -261,8 +261,8 @@ export class TwitchService implements MikuiaService {
 					this.handleMessage(userstate, channel, message);
 				}
 
-				if(message.toLowerCase().indexOf(this.settings.services.twitch.username.toLowerCase()) > -1) {
-					Log.info('Twitch', logHeader + ' ' + cli.yellowBright(channel) + ' ' + cli.yellow('(' + this.idMappings[channel] + ')') + ' / ' + cli.greenBright(userstate.username) + ': ' + message);
+				if(self || message.toLowerCase().indexOf(this.settings.services.twitch.username.toLowerCase()) > -1) {
+					Log.info('Twitch', logHeader + ' ' + cli.yellowBright(channel) + ' ' + cli.yellow('(' + this.idMappings[channel] + ')') + ' / ' + (self ? cli.magentaBright(userstate.username) : cli.greenBright(userstate.username)) + ': ' + message);
 				}
 			})
 
