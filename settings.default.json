@@ -1,0 +1,32 @@
+{
+	"services": {
+		"twitch": {
+			"username": "Mikuia",
+			"oauth": "oauth:YOUR_30_RANDOM_CHARACTERS_HERE",
+			"connections": 5,
+			"clientId": "YOUR_CLIENT_ID_HERE_YOU_GET_THE_POINT",
+			"autojoin": [{
+				"id": 46773113,
+				"name": "lauriys"
+			},
+			{
+				"id": 52694414,
+				"name": "mikuia"
+			}]
+		}
+	},
+	"redis": {
+		"host": "127.0.0.1",
+		"port": 6379,
+		"db": 0,
+		"options": {
+			"auth_pass": "YOUR_REDIS_PASSWORD_OR_SOMETHING",
+			"socket_nodelay": true,
+			"socket_keepalive": true
+		}
+	},
+	"zeromq": {
+		"address": "tcp://127.0.0.1",
+		"ports": [3000, 3001]
+	}
+}

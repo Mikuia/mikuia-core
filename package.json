@@ -1,0 +1,28 @@
+{
+	"name": "mikuia-core",
+	"version": "0.1.0",
+	"author": "lauriys",
+	"license": "MIT",
+	"repository": {
+	"type": "git",
+		"url": "https://github.com/Mikuia/mikuia-core.git"
+	},
+	"dependencies": {
+		"bluebird": "^3.4.7",
+		"cli-color": "^1.2.0",
+		"moment": "^2.17.1",
+		"redis": "^2.6.5",
+		"request": "^2.80.0",
+		"rolling-rate-limiter": "^0.1.4",
+		"tmi.js": "^1.1.2",
+		"zmq": "^2.15.3"
+	},
+	"devDependencies": {
+		"@types/bluebird": "^3.0.37",
+		"@types/cli-color": "^0.3.29",
+		"@types/node": "^7.0.5",
+		"@types/zmq": "^0.0.20",
+		"ts-node": "^3.0.2",
+		"typescript": "^2.2.1"
+	}
+}
