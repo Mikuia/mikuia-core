@@ -63,7 +63,7 @@ export class TwitchService implements MikuiaService {
 
 		if(handler) {
 			if(this.msg.isHandler(handler)) {
-				var settings = await Channel.getCommandSettings(trigger, this.msg.getHandler(handler).settings);
+				var settings = await Channel.getCommandSettings(trigger, this.msg.getHandler(handler).info.settings);
 
 				this.msg.broadcast('event:handler:' + handler, {
 					service: {
@@ -73,7 +73,8 @@ export class TwitchService implements MikuiaService {
 						type: 'twitch'
 					},
 					message: message,
-					tokens: tokens
+					tokens: tokens,
+					settings: settings
 				});
 			} else {
 				this.say(channel, 'Sorry, could not process your command. (handler missing: ' + handler + ')');

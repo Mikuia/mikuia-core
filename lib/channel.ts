@@ -17,8 +17,15 @@ export class Channel {
 
 	async getCommandSettings(trigger: string, defaults: object | null): Promise<object | null> {
 		var settings = await this.db.hgetallAsync('channel:' + this.type + ':' + this.id + ':command:' + trigger);
+		if(!settings) {
+			settings = {};
+		}
 		if(defaults) {
-			return Tools.extend(defaults, settings);
+			for(let setting in defaults) {
+				if(defaults[setting].default != undefined && settings[setting] == undefined) {
+					settings[setting] = defaults[setting].default;
+				}
+			}
 		}
 		return settings;
 	}
