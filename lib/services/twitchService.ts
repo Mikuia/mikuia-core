@@ -63,19 +63,26 @@ export class TwitchService implements MikuiaService {
 
 		if(handler) {
 			if(this.msg.isHandler(handler)) {
-				var settings = await Channel.getCommandSettings(trigger, this.msg.getHandler(handler).info.settings);
+				var plugin = this.msg.getHandler(handler).plugin;
+				var isEnabled = await Channel.isPluginEnabled(plugin);
 
-				this.msg.broadcast('event:handler:' + handler, {
-					service: {
-						userstate: userstate,
-						channel: channel,
+				if(isEnabled) {
+					var settings = await Channel.getCommandSettings(trigger, this.msg.getHandler(handler).info.settings);
+
+					this.msg.broadcast('event:handler:' + handler, {
+						service: {
+							userstate: userstate,
+							channel: channel,
+							message: message,
+							type: 'twitch'
+						},
 						message: message,
-						type: 'twitch'
-					},
-					message: message,
-					tokens: tokens,
-					settings: settings
-				});
+						tokens: tokens,
+						settings: settings
+					});
+				} else {
+					this.say(channel, 'Sorry, could not process your command. (plugin disabled: ' + plugin + ')');
+				}
 			} else {
 				this.say(channel, 'Sorry, could not process your command. (handler missing: ' + handler + ')');
 			}

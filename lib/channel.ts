@@ -34,4 +34,9 @@ export class Channel {
 		return await this.db.hgetAsync('channel:' + this.type + ':' + this.id, 'username');
 	}
 
+	async isPluginEnabled(plugin: string): Promise<boolean> {
+		var result = await this.db.sismemberAsync('channel:' + this.type + ':' + this.id + ':plugins', plugin);
+		return (result == 1) ? true : false;
+	}
+
 }
