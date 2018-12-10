@@ -4,8 +4,11 @@
 	"author": "lauriys",
 	"license": "MIT",
 	"repository": {
-	"type": "git",
+		"type": "git",
 		"url": "https://github.com/Mikuia/mikuia-core.git"
+	},
+	"scripts": {
+		"start": "ts-node index.ts"
 	},
 	"dependencies": {
 		"bluebird": "^3.5.3",
@@ -15,14 +18,14 @@
 		"request": "^2.88.0",
 		"rolling-rate-limiter": "^0.1.11",
 		"tmi.js": "^1.2.1",
+		"ts-node": "^7.0.1",
 		"zeromq": "^5.1.0"
 	},
 	"devDependencies": {
 		"@types/bluebird": "^3.5.24",
 		"@types/cli-color": "^0.3.29",
-		"@types/node": "^10.12.11",
+		"@types/node": "^10.12.12",
 		"@types/zeromq": "^4.6.1",
-		"ts-node": "^7.0.1",
-		"typescript": "^3.2.1"
+		"typescript": "^3.2.2"
 	}
 }
