@@ -316,18 +316,33 @@ export class TwitchService implements MikuiaService {
 
 			var channels = await this.db.smembersAsync('service:twitch:channels:enabled');
 
-			for(let [index, chunk] of Tools.chunkArray(channels, 100).entries()) {
-				// Fucking lmao
-				// Log.info('Twitch', 'Checking channels ' + (index * 100 + 1) + ' to ' + (index * 100 + chunk.length) + '...')
+			if(!this.settings.services.twitch.joinOffline) {
+				for(let [index, chunk] of Tools.chunkArray(channels, 100).entries()) {
+					// Fucking lmao
+					// Log.info('Twitch', 'Checking channels ' + (index * 100 + 1) + ' to ' + (index * 100 + chunk.length) + '...')
 
-				var data: TwitchGetLiveStreamsResponse = await this.parseChunk(chunk);
-				for(let stream of data.streams) {
-					var channel = this.getChannel(stream.channel._id);
+					var data: TwitchGetLiveStreamsResponse = await this.parseChunk(chunk);
+					for(let stream of data.streams) {
+						var channel = this.getChannel(stream.channel._id);
+						
+						this.idMappings['#' + stream.channel.name] = stream.channel._id;
+						this.idMappings[stream.channel.name] = stream.channel._id;
+						this.nameMappings[stream.channel._id] = stream.channel.name;
+
+						await this.join(channel);
+					}
+				}
+			} else {
+				for(let channelId of channels) {
+					var channel = this.getChannel(channelId);
+					var profile = await this.db.hgetallAsync('service:twitch:user:' + channelId);
+
+					var name = profile.login;
+
+					this.idMappings['#' + name] = channelId;
+					this.idMappings[name] = channelId;
+					this.nameMappings[channelId] = name;
 					
-					this.idMappings['#' + stream.channel.name] = stream.channel._id;
-					this.idMappings[stream.channel.name] = stream.channel._id;
-					this.nameMappings[stream.channel._id] = stream.channel.name;
-
 					await this.join(channel);
 				}
 			}

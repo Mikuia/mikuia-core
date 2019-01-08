@@ -12,7 +12,8 @@
 			{
 				"id": 52694414,
 				"name": "mikuia"
-			}]
+			}],
+			"joinOffline": false
 		}
 	},
 	"redis": {

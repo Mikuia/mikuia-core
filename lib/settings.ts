@@ -13,7 +13,8 @@ export interface Settings {
 			oauth: string,
 			connections: number,
 			clientId: string,
-			autojoin: TwitchChannelAutojoinObject[]
+			autojoin: TwitchChannelAutojoinObject[],
+			joinOffline: boolean
 		}
 	},
 	zeromq: {
