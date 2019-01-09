@@ -313,7 +313,7 @@ export class TwitchService implements MikuiaService {
 			Log.info('Twitch', 'Starting the channel check.');
 			this.updatingChannels = true;
 
-			var channels = await this.db.smembersAsync('service:twitch:channels:enabled');
+			var channels = await this.db.smembersAsync('service:twitch:targets:enabled');
 
 			if(!this.settings.services.twitch.joinOffline) {
 				for(let [index, chunk] of Tools.chunkArray(channels, 100).entries()) {
