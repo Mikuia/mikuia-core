@@ -8,6 +8,8 @@ import {Messaging} from './lib/messaging';
 import {Models} from './lib/models';
 import {Services} from './lib/services';
 import {Settings} from './lib/settings';
+
+import {DiscordService} from './lib/services/discordService'
 import {TwitchService} from './lib/services/twitchService'
 
 export class Mikuia {
@@ -62,6 +64,7 @@ export class Mikuia {
 		this.initServices();
 		this.initMessaging();		
 
+		this.services.add('discord', new DiscordService(this.settings, this.db, this.models, this.msg));
 		this.services.add('twitch', new TwitchService(this.settings, this.db, this.models, this.msg));
 
 		await this.services.connect();

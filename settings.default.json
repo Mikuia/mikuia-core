@@ -1,5 +1,8 @@
 {
 	"services": {
+		"discord": {
+			"token": "OH_GEE_I_WONDER_WHAT_THIS_IS_FOR"
+		},
 		"twitch": {
 			"username": "Mikuia",
 			"oauth": "oauth:YOUR_30_RANDOM_CHARACTERS_HERE",

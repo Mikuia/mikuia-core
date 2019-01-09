@@ -8,6 +8,9 @@ export interface Settings {
 		options: redis.ClientOpts
 	},
 	services: {
+		discord: {
+			token: string
+		},
 		twitch: {
 			username: string,
 			oauth: string,

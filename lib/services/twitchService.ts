@@ -17,7 +17,7 @@ import {TwitchGetLiveStreamsResponse} from '../responses/twitchGetLiveStreamsRes
 const MAX_JOIN_INTERVAL = 15;
 const MAX_JOIN_IN_INTERVAL = 49;
 
-export class TwitchService implements MikuiaService {
+export class TwitchService extends MikuiaService {
 	private channelClients = {};
 	private channelsJoined: Array<string> = [];
 	private connectionChannels = {};
@@ -35,8 +35,6 @@ export class TwitchService implements MikuiaService {
 
 	private updatingChannels = false;
 
-	constructor(private settings: Settings, private db: redis.RedisClient, private models: Models, private msg: Messaging) {}
-
 	async connect() {
 		for(let id of [...Array(this.settings.services.twitch.connections).keys()]) {
 			this.connections[id] = await this.spawnConnection(id); 
@@ -47,57 +45,24 @@ export class TwitchService implements MikuiaService {
 		return this.models.getTarget('twitch', serviceId);
 	}
 
-	async handleMessage(userstate: any, channel: string, message: string) {
+	async handleTwitchMessage(userstate: any, channel: string, message: string) {
 		this.msg.broadcast('service:twitch:chat:message', {
 			user: userstate,
 			channel: channel,
 			message: message
 		});
 
-		var tokens = message.split(' ');
-		var trigger = tokens[0];
-
 		var Channel = this.getChannel(this.idMappings[channel]);
-		var handler = await Channel.getCommandHandler(trigger);
-
-		if(handler) {
-			if(this.msg.isHandler(handler)) {
-				var plugin = this.msg.getHandler(handler).plugin;
-				var isEnabled = await Channel.isPluginEnabled(plugin);
-
-				if(isEnabled) {
-					var settings = await Channel.getCommandSettings(trigger, this.msg.getHandler(handler).info.settings);
-
-					this.msg.broadcast('event:handler:' + handler, {
-						service: {
-							userstate: userstate,
-							channel: channel,
-							message: message,
-							type: 'twitch'
-						},
-						message: message,
-						tokens: tokens,
-						settings: settings
-					});
-				} else {
-					this.say(channel, 'Sorry, could not process your command. (plugin disabled: ' + plugin + ')');
-				}
-			} else {
-				this.say(channel, 'Sorry, could not process your command. (handler missing: ' + handler + ')');
-			}
-		}
-		// } else {
-		// 	this.say(channel, 'Sorry, could not process your command. (handler missing: ' + handler + ')');
-		// }
-		// console.log(cli.greenBright(channel) + ' -> ' + cli.redBright(trigger) + ' -> ' + cli.cyanBright(command));
+		this.handleMessage(Channel, message, {
+			user: userstate
+		});
 	}
 
 	handleResponse(event: any, data: any) {
-		var channel = event.service.channel;
+		var serviceId = event.service.serviceId;
+		var Channel = this.getChannel(serviceId);
 
-		if(this.channelsJoined.indexOf(channel) > -1) {
-			this.say(channel, data.message);
-		}
+		this.say(Channel, data.message, event.service.meta);
 	}
 
 	async join(target: Target) {
@@ -189,10 +154,14 @@ export class TwitchService implements MikuiaService {
 		});
 	}
 
-	say(channel: string, message: string) {
+	say(target: Target, message: string, meta: object) {
+		var channel = this.nameMappings[target.serviceId];
+		
 		if(channel.indexOf('#') == -1) {
 			channel = '#' + channel;
 		}
+
+		if(this.channelsJoined.indexOf(channel) == -1) return;
 
 		if(message.indexOf('.') == 0 || message.indexOf('/') == 0) {
 			message = '!' + message.replace('.', '').replace('/', '');
@@ -265,7 +234,7 @@ export class TwitchService implements MikuiaService {
 
 			client.on('message', (channel: string, userstate: any, message: string, self: boolean) => {
 				if(!self) {
-					this.handleMessage(userstate, channel, message);
+					this.handleTwitchMessage(userstate, channel, message);
 				}
 
 				if(self || message.toLowerCase().indexOf(this.settings.services.twitch.username.toLowerCase()) > -1) {

@@ -136,7 +136,7 @@ export class Messaging {
                     var event = req.args.event;
                     var data = req.args.data;
 
-                    var service = this.services.get(event.service.type);
+                    var service = this.services.get(event.service.service);
                     if(service) {
                         service.handleResponse(event, data);
 
