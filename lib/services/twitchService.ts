@@ -4,13 +4,12 @@ import * as redis from 'redis';
 import * as request from 'request';
 import * as tmi from 'tmi.js';
 
-import {Channel} from '../channel';
 import {Log} from '../log';
 import {Messaging} from '../messaging';
 import {MikuiaService} from './mikuiaService';
-import {Mikuia} from '../../mikuia';
 import {Models} from '../models';
 import {Settings} from '../settings'
+import {Target} from '../target';
 import {Tools} from '../tools';
 
 import {TwitchGetLiveStreamsResponse} from '../responses/twitchGetLiveStreamsResponse';
@@ -44,8 +43,8 @@ export class TwitchService implements MikuiaService {
 		}
 	}
 
-	getChannel(id: number) {
-		return this.models.getChannel(id, 'twitch');
+	getChannel(serviceId: string) {
+		return this.models.getTarget('twitch', serviceId);
 	}
 
 	async handleMessage(userstate: any, channel: string, message: string) {
@@ -101,10 +100,10 @@ export class TwitchService implements MikuiaService {
 		}
 	}
 
-	async join(channel: Channel) {
+	async join(target: Target) {
 		return new Promise(async (resolve) => {
-			if(channel.type == 'twitch') {
-				var name = this.nameMappings[channel.id];
+			if(target.service == 'twitch') {
+				var name = this.nameMappings[target.serviceId];
 				if(this.channelsJoined.indexOf('#' + name) == -1) {
 					/*	Uhhh, I think this deserves an explanation.
 						I don't have one.
@@ -288,7 +287,7 @@ export class TwitchService implements MikuiaService {
 
 	async start() {
 		for(let autojoinObject of this.settings.services.twitch.autojoin) {
-			var channel = this.getChannel(autojoinObject.id);
+			var channel = this.getChannel(autojoinObject.id.toString());
 					
 			this.idMappings['#' + autojoinObject.name] = autojoinObject.id;
 			this.idMappings[autojoinObject.name] = autojoinObject.id;
@@ -323,7 +322,7 @@ export class TwitchService implements MikuiaService {
 
 					var data: TwitchGetLiveStreamsResponse = await this.parseChunk(chunk);
 					for(let stream of data.streams) {
-						var channel = this.getChannel(stream.channel._id);
+						var channel = this.getChannel(stream.channel._id.toString());
 						
 						this.idMappings['#' + stream.channel.name] = stream.channel._id;
 						this.idMappings[stream.channel.name] = stream.channel._id;

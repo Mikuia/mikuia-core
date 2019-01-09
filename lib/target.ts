@@ -1,22 +1,20 @@
 import * as redis from 'redis';
 
-import {Tools} from './tools';
+export class Target {
+	public service: string;
+	public serviceId: string;
 
-export class Channel {
-	public id: number;
-	public type: string;
-
-	constructor(id: number, type: string, private db: redis.RedisClient) {
-		this.id = id;
-		this.type = type;
+	constructor(service: string, serviceId: string, private db: redis.RedisClient) {
+		this.service = service;
+		this.serviceId = serviceId;
 	}
 
 	async getCommandHandler(trigger: string): Promise<string | null> {
-		return await this.db.hgetAsync('channel:' + this.type + ':' + this.id + ':commands', trigger);
+		return await this.db.hgetAsync('target:' + this.service + ':' + this.serviceId + ':commands', trigger);
 	}
 
 	async getCommandSettings(trigger: string, defaults: object | null): Promise<object | null> {
-		var settings = await this.db.hgetallAsync('channel:' + this.type + ':' + this.id + ':command:' + trigger);
+		var settings = await this.db.hgetallAsync('target:' + this.service + ':' + this.serviceId + ':command:' + trigger);
 
 		if(!settings) {
 			settings = {};
@@ -63,11 +61,11 @@ export class Channel {
 	}
 
 	async getName(): Promise<string> {
-		return await this.db.hgetAsync('channel:' + this.type + ':' + this.id, 'username');
+		return await this.db.hgetAsync('target:' + this.service + ':' + this.serviceId, 'username');
 	}
 
 	async isPluginEnabled(plugin: string): Promise<boolean> {
-		var result = await this.db.sismemberAsync('channel:' + this.type + ':' + this.id + ':plugins', plugin);
+		var result = await this.db.sismemberAsync('target:' + this.service + ':' + this.serviceId + ':plugins', plugin);
 		return (result == 1) ? true : false;
 	}
 

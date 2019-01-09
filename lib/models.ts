@@ -1,13 +1,13 @@
 import * as redis from 'redis';
 
-import {Channel} from './channel';
+import {Target} from './target';
 
 export class Models {
 
     constructor(private db: redis.RedisClient) {}
     
-    getChannel(id: number, type: string) {
-        return new Channel(id, type, this.db);
+    getTarget(service: string, serviceId: string) {
+        return new Target(service, serviceId, this.db);
     }
 
 }

@@ -1,11 +1,8 @@
-import * as redis from 'redis';
-
-import {Channel} from '../channel';
-import {Settings} from '../settings';
+import {Target} from '../target';
 
 export interface MikuiaService {
 	connect();
 	handleResponse(event: object, data: object);
-	join(channel: Channel);
+	join(target: Target);
 	start();
 }
