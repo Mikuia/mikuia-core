@@ -3,6 +3,8 @@ import * as redis from 'redis';
 
 bluebird.promisifyAll(redis);
 
+import {PromisifiedRedisClient} from 'mikuia-shared';
+
 import {Log} from './lib/log';	
 import {Messaging} from './lib/messaging';
 import {Models} from './lib/models';
@@ -13,7 +15,7 @@ import {DiscordService} from './lib/services/discordService'
 import {TwitchService} from './lib/services/twitchService'
 
 export class Mikuia {
-	private db: redis.RedisClient;
+	private db: PromisifiedRedisClient;
 	private msg: Messaging;
 	private models: Models;
 	private services: Services;
@@ -21,7 +23,7 @@ export class Mikuia {
 
 	async initDatabase() {
 		return new Promise((resolve) => {
-			this.db = redis.createClient(this.settings.redis.port, this.settings.redis.host, this.settings.redis.options);
+			this.db = redis.createClient(this.settings.redis.port, this.settings.redis.host, this.settings.redis.options) as PromisifiedRedisClient;
 
 			this.db.on('ready', () => {
 				Log.success('Redis', 'Connected to Redis.')

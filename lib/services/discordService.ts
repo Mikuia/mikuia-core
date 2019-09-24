@@ -1,8 +1,9 @@
 import * as Discord from 'discord.js';
 
+import {Target} from 'mikuia-shared';
+
 import {Log} from '../log';
 import {MikuiaService} from './mikuiaService';
-import {Target} from '../target';
 
 export class DiscordService extends MikuiaService {
 	private client: Discord.Client;

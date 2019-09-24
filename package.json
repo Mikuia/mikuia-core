@@ -8,25 +8,27 @@
 		"url": "https://github.com/Mikuia/mikuia-core.git"
 	},
 	"scripts": {
+		"dev": "nodemon --watch \"lib/**/*.ts\" --exec ts-node index.ts",
 		"start": "ts-node index.ts"
 	},
 	"dependencies": {
-		"bluebird": "^3.5.3",
+		"bluebird": "^3.5.5",
 		"cli-color": "^1.4.0",
-		"discord.js": "^11.4.2",
-		"moment": "^2.22.2",
+		"discord.js": "^11.5.1",
+		"moment": "^2.24.0",
 		"redis": "^2.8.0",
 		"request": "^2.88.0",
 		"rolling-rate-limiter": "^0.1.11",
-		"tmi.js": "^1.2.1",
-		"ts-node": "^7.0.1",
+		"tmi.js": "^1.5.0",
+		"ts-node": "^8.4.1",
 		"zeromq": "^5.1.0"
 	},
 	"devDependencies": {
-		"@types/bluebird": "^3.5.24",
+		"@types/bluebird": "^3.5.27",
 		"@types/cli-color": "^0.3.29",
-		"@types/node": "^10.12.12",
-		"@types/zeromq": "^4.6.1",
-		"typescript": "^3.2.2"
+		"@types/node": "^12.7.5",
+		"@types/zeromq": "^4.6.2",
+		"nodemon": "^1.19.2",
+		"typescript": "^3.6.3"
 	}
 }

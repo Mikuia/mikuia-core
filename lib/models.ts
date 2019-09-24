@@ -1,6 +1,6 @@
 import * as redis from 'redis';
 
-import {Target} from './target';
+import {Target} from 'mikuia-shared';
 
 export class Models {
 

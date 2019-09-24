@@ -4,12 +4,13 @@ import * as redis from 'redis';
 import * as request from 'request';
 import * as tmi from 'tmi.js';
 
+import {Target} from 'mikuia-shared';
+
 import {Log} from '../log';
 import {Messaging} from '../messaging';
 import {MikuiaService} from './mikuiaService';
 import {Models} from '../models';
 import {Settings} from '../settings'
-import {Target} from '../target';
 import {Tools} from '../tools';
 
 import {TwitchGetLiveStreamsResponse} from '../responses/twitchGetLiveStreamsResponse';

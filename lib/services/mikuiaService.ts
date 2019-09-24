@@ -1,9 +1,10 @@
 import * as redis from 'redis';
 
+import {Target} from 'mikuia-shared';
+
 import {Messaging} from '../messaging';
 import {Models} from '../models';
 import {Settings} from '../settings'
-import {Target} from '../target';
 
 export abstract class MikuiaService {
 	abstract connect();
@@ -18,17 +19,17 @@ export abstract class MikuiaService {
 		var tokens = message.split(' ');
 		var trigger = tokens[0];
 
-		var handler = await target.getCommandHandler(trigger);
+		var command = await target.getCommand(trigger);
 
-		if(handler) {
-			if(this.msg.isHandler(handler)) {
-				var plugin = this.msg.getHandler(handler).plugin;
+		if(command) {
+			if(this.msg.isHandler(command.handler)) {
+				var plugin = this.msg.getHandler(command.handler).plugin;
 				var isEnabled = await target.isPluginEnabled(plugin);
 
 				if(isEnabled) {
-					var settings = await target.getCommandSettings(trigger, this.msg.getHandler(handler).info.settings);
+					var settings = await target.getCommandSettings(trigger, this.msg.getHandler(command.handler).info.settings);
 
-					this.msg.broadcast('event:handler:' + handler, {
+					this.msg.broadcast('event:handler:' + command.handler, {
 						service: {
 							meta: meta,
 							message: message,
@@ -43,7 +44,7 @@ export abstract class MikuiaService {
 					this.say(target, 'Sorry, could not process your command. (plugin disabled: ' + plugin + ')', meta);
 				}
 			} else {
-				this.say(target, 'Sorry, could not process your command. (handler missing: ' + handler + ')', meta);
+				this.say(target, 'Sorry, could not process your command. (handler missing: ' + command.handler + ')', meta);
 			}
 		}
 	}
