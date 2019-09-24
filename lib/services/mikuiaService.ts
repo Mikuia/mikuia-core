@@ -27,7 +27,7 @@ export abstract class MikuiaService {
 				var isEnabled = await target.isPluginEnabled(plugin);
 
 				if(isEnabled) {
-					var settings = await target.getCommandSettings(trigger, this.msg.getHandler(command.handler).info.settings);
+					var settings = await target.getCommandSettings(command.id, this.msg.getHandler(command.handler).info.settings);
 
 					this.msg.broadcast('event:handler:' + command.handler, {
 						service: {
