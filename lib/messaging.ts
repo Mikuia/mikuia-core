@@ -76,17 +76,18 @@ export class Messaging {
 	handleIdentify(req) {
 		var name = req.args.name;
 
-		if(name && Object.keys(this.plugins).indexOf(name) == -1) {                    
+		if(name && Object.keys(this.plugins).indexOf(name) == -1) { 
+			var heartbeat = (new Date()).getTime();                   
 			var token = Math.random().toString(36).slice(-32);
 			this.tokens[token] = name;
 
 			this.plugins[name] = {
 				handlers: [],
-				heartbeat: (new Date()).getTime(),
+				heartbeat: heartbeat,
 				token: token
 			};
 
-			this.db.saddAsync('mikuia:plugins', name);
+			this.db.zaddAsync('mikuia:plugins:heartbeats', heartbeat, name);
 
 			return this.reply(req, {
 				type: 'string',
