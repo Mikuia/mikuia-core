@@ -16,12 +16,21 @@ export class DiscordService extends MikuiaService {
 
 			this.client.on('ready', () => {
 				Log.info('Discord', 'Connected.');
+
+				this.client.guilds.forEach(async (guild) => {
+					await this.syncGuild(guild);
+				});
+
 				resolve();
-			})
+			});
+
+			this.client.on('guildCreate', (guild) => {
+				this.syncGuild(guild);
+			});
 
 			this.client.on('message', (message) => {
 				this.handleDiscordMessage(message);
-			})
+			});
 		});
 	}
 
@@ -60,5 +69,21 @@ export class DiscordService extends MikuiaService {
 
 	async start() {
 		// lmao
+	}
+
+	async syncGuild(guild: Discord.Guild) {
+		Log.info('Discord', `Syncing guild: ${guild.id} (${guild.name})`);
+		var ownerId = guild.ownerID;
+
+		var userId = await this.db.hgetAsync('users:service:discord', ownerId);
+		if(!userId) return;
+
+		await this.db.delAsync(`target:discord:${guild.id}:permissions`);
+		this.db.saddAsync(`target:discord:${guild.id}:permissions`, ownerId);
+		this.db.saddAsync(`user:${userId}:service:discord:targets`, guild.id);
+		this.db.hmsetAsync(`target:discord:${guild.id}`, {
+			image: guild.iconURL,
+			name: guild.name
+		});
 	}
 }
