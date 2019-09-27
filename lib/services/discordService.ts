@@ -35,7 +35,7 @@ export class DiscordService extends MikuiaService {
 	}
 
 	getServer(serviceId: string) {
-		return this.models.getTarget('discord', serviceId);
+		return this.models.targets.getByServiceId('discord', serviceId);
 	}
 
 	async handleDiscordMessage(message: Discord.Message) {

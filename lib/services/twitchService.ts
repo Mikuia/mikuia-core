@@ -43,7 +43,7 @@ export class TwitchService extends MikuiaService {
 	}
 
 	getChannel(serviceId: string) {
-		return this.models.getTarget('twitch', serviceId);
+		return this.models.targets.getByServiceId('twitch', serviceId);
 	}
 
 	async handleTwitchMessage(userstate: any, channel: string, message: string) {

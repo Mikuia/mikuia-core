@@ -1,13 +1,11 @@
 import * as redis from 'redis';
 
-import {Target} from 'mikuia-shared';
+import {Target, Targets} from 'mikuia-shared';
 
 export class Models {
+	public targets: Targets;
 
-    constructor(private db: redis.RedisClient) {}
-    
-    getTarget(service: string, serviceId: string) {
-        return new Target(service, serviceId, this.db);
-    }
-
+    constructor(private db: redis.RedisClient) {
+		this.targets = new Targets(db);
+	}
 }
