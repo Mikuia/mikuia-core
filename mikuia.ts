@@ -39,7 +39,7 @@ export class Mikuia {
 	}
 
 	initMessaging() {
-		this.msg = new Messaging(this.services, this.settings);
+		this.msg = new Messaging(this.db, this.services, this.settings);
 	}
 
 	initModels() {

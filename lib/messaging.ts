@@ -1,4 +1,5 @@
 import * as cli from 'cli-color';
+import * as redis from 'redis';
 import * as zmq from 'zeromq';
 
 import {Log} from './log';
@@ -14,7 +15,7 @@ export class Messaging {
     private pub: zmq.Socket;
     private rep: zmq.Socket;
 
-    constructor(private services: Services, private settings: Settings)  {
+    constructor(private db: redis.RedisClient, private services: Services, private settings: Settings)  {
         this.pub = zmq.socket('pub');
         this.rep = zmq.socket('rep');
 
@@ -54,6 +55,86 @@ export class Messaging {
         return this.handlers[handler];
     }
 
+	handleHeartbeat(req) {
+		if(this.tokens[req.token]) {
+			var heartbeat = (new Date()).getTime();
+			this.plugins[this.tokens[req.token]].heartbeat = heartbeat;
+		
+			this.db.zaddAsync('mikuia:plugins:heartbeats', heartbeat, this.tokens[req.token]);
+
+			return this.reply(req, {
+				error: false
+			});
+		}
+
+		return this.reply(req, {
+			type: 'error',
+			error: true
+		});
+	}
+
+	handleIdentify(req) {
+		var name = req.args.name;
+
+		if(name && Object.keys(this.plugins).indexOf(name) == -1) {                    
+			var token = Math.random().toString(36).slice(-32);
+			this.tokens[token] = name;
+
+			this.plugins[name] = {
+				handlers: [],
+				heartbeat: (new Date()).getTime(),
+				token: token
+			};
+
+			this.db.saddAsync('mikuia:plugins', name);
+
+			return this.reply(req, {
+				type: 'string',
+				error: false,
+				message: token
+			})
+		}
+
+		return this.reply(req, {
+			type: 'error',
+			error: true
+		});
+	}
+
+	handleRegisterHandler(req) {
+		var name = req.args.name;
+
+		if(!this.isHandler(name) && this.tokens[req.token]) {
+			this.handlers[name] = {
+				plugin: this.tokens[req.token],
+				info: Tools.extend({
+					description: '-',
+					anonymous: true,
+					settings: {}
+				}, req.args.info)
+			}
+
+			this.plugins[this.tokens[req.token]].handlers.push(name);
+
+			this.db.saddAsync(`plugin:${this.tokens[req.token]}:handlers`, name);
+			this.db.hsetAsync('mikuia:handlers', name, this.tokens[req.token]);
+			this.db.hmsetAsync(`handler:${name}`, {
+				plugin: this.tokens[req.token],
+				description: this.handlers[name].info.description,
+				settings: JSON.stringify(this.handlers[name].info.settings)
+			});
+
+			return this.reply(req, {
+				error: false
+			});
+		}
+
+		return this.reply(req, {
+			type: 'error',
+			error: true
+		});
+	}
+
     isHandler(handler: string) {
         return Object.keys(this.handlers).indexOf(handler) > -1;
     }
@@ -68,68 +149,13 @@ export class Messaging {
                 });
 
             case "heartbeat":
-                if(this.tokens[req.token]) {
-                    this.plugins[this.tokens[req.token]].heartbeat = (new Date()).getTime();
-                
-                    return this.reply(req, {
-                        error: false
-                    });
-                }
-
-                return this.reply(req, {
-                    type: 'error',
-                    error: true
-                });
+				return this.handleHeartbeat(req);
                 
             case "identify":
-                var name = req.args.name;
-
-                if(name && Object.keys(this.plugins).indexOf(name) == -1) {                    
-                    var token = Math.random().toString(36).slice(-32);
-                    this.tokens[token] = name;
-
-                    this.plugins[name] = {
-                        handlers: [],
-                        heartbeat: (new Date()).getTime(),
-                        token: token
-                    };
-
-                    return this.reply(req, {
-                        type: 'string',
-                        error: false,
-                        message: token
-                    })
-                }
-
-                return this.reply(req, {
-                    type: 'error',
-                    error: true
-                });
+                return this.handleIdentify(req);
 
             case "registerHandler":
-                var name = req.args.name;
-
-                if(!this.isHandler(name) && this.tokens[req.token]) {
-                    this.handlers[name] = {
-                        plugin: this.tokens[req.token],
-                        info: Tools.extend({
-                            description: '-',
-                            anonymous: true,
-                            settings: {}
-                        }, req.args.info)
-                    }
-
-                    this.plugins[this.tokens[req.token]].handlers.push(name);
-
-                    return this.reply(req, {
-                        error: false
-                    });
-                }
-
-                return this.reply(req, {
-                    type: 'error',
-                    error: true
-                });
+                return this.handleRegisterHandler(req);
             
             case "respond":
                 if(this.tokens[req.token]) {
