@@ -107,19 +107,25 @@ export class Messaging {
 			const {data, language, type} = req.args;
 			const plugin = this.tokens[req.token];
 
-			for(var handlerId of Object.keys(data)) {
-				var handler = data[handlerId];
-				
-				this.db.hsetAsync(`locale:${language}:handlers`, handlerId, handler.description);
-
-				for(var settingId of Object.keys(handler.settings)) {
-					var details = handler.settings[settingId];
-
-					this.db.hmsetAsync(`locale:${language}:plugin:${plugin}`, {
-						[`${settingId}.name`]: details.name,
-						[`${settingId}.description`]: details.description
-					});
-				}
+			switch(type) {
+				case 'handlers':
+					for(var handlerId of Object.keys(data)) {
+						var handler = data[handlerId];
+						
+						if(handler.description) this.db.hsetAsync(`locale:${language}:handlers`, handlerId, handler.description);
+						
+						if(handler.settings && Object.keys(handler.settings).length > 0) {
+							for(var settingId of Object.keys(handler.settings)) {
+								var details = handler.settings[settingId];
+			
+								this.db.hmsetAsync(`locale:${language}:plugin:${plugin}`, {
+									[`${settingId}.name`]: details.name,
+									[`${settingId}.description`]: details.description
+								});
+							}
+						}
+					}
+					break;
 			}
 
 			return this.reply(req, {
