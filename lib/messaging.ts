@@ -102,6 +102,37 @@ export class Messaging {
 		});
 	}
 
+	handleRegisterLocale(req) {
+		if(this.tokens[req.token]) {
+			const {data, language, type} = req.args;
+			const plugin = this.tokens[req.token];
+
+			for(var handlerId of Object.keys(data)) {
+				var handler = data[handlerId];
+				
+				this.db.hsetAsync(`locale:${language}:handlers`, handlerId, handler.description);
+
+				for(var settingId of Object.keys(handler.settings)) {
+					var details = handler.settings[settingId];
+
+					this.db.hmsetAsync(`locale:${language}:plugin:${plugin}`, {
+						[`${settingId}.name`]: details.name,
+						[`${settingId}.description`]: details.description
+					});
+				}
+			}
+
+			return this.reply(req, {
+				error: false
+			});
+		}
+
+		return this.reply(req, {
+			type: 'error',
+			error: true
+		});
+	}
+
 	handleRegisterHandler(req) {
 		var name = req.args.name;
 
@@ -153,7 +184,10 @@ export class Messaging {
 				return this.handleHeartbeat(req);
                 
             case "identify":
-                return this.handleIdentify(req);
+				return this.handleIdentify(req);
+				
+			case "registerLocale":
+                return this.handleRegisterLocale(req);
 
             case "registerHandler":
                 return this.handleRegisterHandler(req);
