@@ -17,6 +17,9 @@ export class DiscordService extends MikuiaService {
 			this.client.on('ready', () => {
 				Log.info('Discord', 'Connected.');
 
+				Log.info('Discord', 'Wiping server list...');
+				this.db.delAsync(`service:discord:targets:enabled`);
+
 				this.client.guilds.forEach(async (guild) => {
 					await this.syncGuild(guild);
 				});
@@ -26,6 +29,10 @@ export class DiscordService extends MikuiaService {
 
 			this.client.on('guildCreate', (guild) => {
 				this.syncGuild(guild);
+			});
+
+			this.client.on('guildDelete', (guild) => {
+				this.removeGuild(guild);
 			});
 
 			this.client.on('message', (message) => {
@@ -62,6 +69,18 @@ export class DiscordService extends MikuiaService {
 		// welp.
 	}
 
+	async removeGuild(guild: Discord.Guild) {
+		Log.info('Discord', `Removing guild: ${guild.id} (${guild.name})`);
+
+		this.db.sremAsync('service:discord:targets:enabled', guild.id);
+		this.db.delAsync(`target:discord:${guild.id}:permissions`);
+
+		var userId = await this.db.hgetAsync('users:service:discord', guild.ownerID);
+		if(!userId) return;
+
+		this.db.sremAsync(`user:${userId}:service:discord:targets`, guild.id);
+	}
+
 	async say(target: Target, message: string, meta: any) {
 		var channel = this.client.channels.get(meta.channelId) as Discord.TextChannel;
 		channel.send(message);
@@ -73,13 +92,13 @@ export class DiscordService extends MikuiaService {
 
 	async syncGuild(guild: Discord.Guild) {
 		Log.info('Discord', `Syncing guild: ${guild.id} (${guild.name})`);
-		var ownerId = guild.ownerID;
 
-		var userId = await this.db.hgetAsync('users:service:discord', ownerId);
+		var userId = await this.db.hgetAsync('users:service:discord', guild.ownerID);
 		if(!userId) return;
 
 		await this.db.delAsync(`target:discord:${guild.id}:permissions`);
-		this.db.saddAsync(`target:discord:${guild.id}:permissions`, ownerId);
+		this.db.saddAsync('service:discord:targets:enabled', guild.id);
+		this.db.saddAsync(`target:discord:${guild.id}:permissions`, guild.ownerID);
 		this.db.saddAsync(`user:${userId}:service:discord:targets`, guild.id);
 		this.db.hmsetAsync(`target:discord:${guild.id}`, {
 			image: guild.iconURL,
