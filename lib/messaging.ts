@@ -126,6 +126,10 @@ export class Messaging {
 						}
 					}
 					break;
+				case 'plugin':
+					if(data.name) this.db.hsetAsync(`locale:${language}:plugins`, plugin, data.name);
+					if(data.description) this.db.hsetAsync(`locale:${language}:plugins`, plugin, data.description);
+					break;
 			}
 
 			return this.reply(req, {
