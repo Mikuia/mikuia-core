@@ -127,8 +127,8 @@ export class Messaging {
 					}
 					break;
 				case 'plugin':
-					if(data.name) this.db.hsetAsync(`locale:${language}:plugins`, plugin, data.name);
-					if(data.description) this.db.hsetAsync(`locale:${language}:plugins`, plugin, data.description);
+					if(data.name) this.db.hsetAsync(`locale:${language}:plugins`, `${plugin}.name`, data.name);
+					if(data.description) this.db.hsetAsync(`locale:${language}:plugins`, `${plugin}.description`, data.description);
 					break;
 			}
 
